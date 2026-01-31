@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>💘كل سنه و احنى مع بعض</title>
+  <style>
+    :root{
+      --bg1:#ff2d55;
+      --bg2:#7b2cff;
+      --card: rgba(255,255,255,.14);
+      --border: rgba(255,255,255,.22);
+      --text: rgba(255,255,255,.95);
+      --muted: rgba(255,255,255,.78);
+      --shadow: 0 18px 60px rgba(0,0,0,.25);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 20% 20%, #ff88b6 0%, transparent 55%),
+                  radial-gradient(900px 600px at 80% 30%, #b388ff 0%, transparent 55%),
+                  linear-gradient(135deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
+    canvas{position:fixed; inset:0; pointer-events:none}
+    .wrap{
+      position:relative;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+    }
+    .card{
+      width:min(680px, 92vw);
+      background: var(--card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 28px 22px;
+      text-align:center;
+    }
+    .badge{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.10);
+      font-weight:600;
+      letter-spacing:.2px;
+    }
+    h1{
+      margin:18px 0 8px;
+      font-size: clamp(26px, 4.2vw, 40px);
+      line-height:1.2;
+    }
+    p{
+      margin: 10px auto 18px;
+      color: var(--muted);
+      font-size: clamp(15px, 2.4vw, 18px);
+      line-height:1.8;
+      max-width: 56ch;
+    }
+    .type{
+      display:inline-block;
+      border-left: 2px solid rgba(255,255,255,.75);
+      padding-left: 8px;
+      animation: blink 1s steps(1) infinite;
+    }
+    @keyframes blink {50%{border-left-color: transparent}}
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:center;
+      margin-top: 16px;
+    }
+    button{
+      appearance:none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.12);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease;
+      min-width: 150px;
+    }
+    button:hover{ transform: translateY(-1px); background: rgba(255,255,255,.18); }
+    .yes{
+      background: rgba(0,0,0,.18);
+    }
+    .footer{
+      margin-top: 18px;
+      font-size: 13px;
+      color: rgba(255,255,255,.7);
+    }
+
+    /* Modal */
+    .modal{
+      position: fixed; inset:0;
+      display:none;
+      place-items:center;
+      background: rgba(0,0,0,.45);
+      padding: 22px;
+    }
+    .modal.show{display:grid}
+    .modal .box{
+      width:min(520px, 92vw);
+      background: rgba(20,20,25,.55);
+      border:1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      padding: 20px 18px;
+      box-shadow: var(--shadow);
+      text-align:center;
+    }
+    .big{
+      font-size: 52px;
+      margin: 6px 0 4px;
+    }
+    a.copy{
+      display:inline-block;
+      margin-top: 10px;
+      color: rgba(255,255,255,.9);
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(255,255,255,.45);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="hearts"></canvas>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="badge">💌  رسالة خاصة لـ أسومتى <span id="toName">___</span></div>
+
+      <h1>
+        <span id="headline">عندي سؤال بسيط…</span><br/>
+        <span class="type" id="typeText"></span>
+      </h1>
+
+      <p id="message">
+        (وجودك في حياتي فرق معايا، وكنت حابب أقولك ربنا يخليكى ليا يحبيبى.)
+      </p>
+
+      <div class="row">
+        <button class="yes" id="btnYes">✅ أيوه</button>
+        <button id="btnNo">🙈 لأ</button>
+      </div>
+</div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="box">
+      <div class="big">💖</div>
+      <h2 id="modalTitle" style="margin:6px 0 6px;">ياااه! فرحتيني 😄</h2>
+      <p id="modalText" style="margin:0 0 10px;">
+        اتفقنا! دلوقتي بقى لازم نتجوز 😌🍫🌹
+      </p>
+      <button id="btnClose">إقفل</button>
+</div>
+  </div>
+
+  <script>
+    // ========= إعدادات سريعة (عدّل دول بس) =========
+    const SETTINGS = {
+      toName: "أسومتى",
+      typeLine: "هتكوني ڤالنتاين بتاعي؟ 💘",
+      message: "وجودك في حياتي فرق معايا… وكنت حابب أقولك ربنا يخليكى ليا يا أسومتى. لو موافقة، دوسي أيوه 😄",
+      noPhrases: [
+        "أكيد زرار لأ اتضغط بالغلط 😅",
+        "طب جرّبي تاني كده 🙃",
+        "مستحيل… لأ مش اختيار منطقي 😂",
+        "أنا مصمّم… مفيش لأ النهارده 😎"
+      ]
+    };
+
+    // ========= تعبئة النص =========
+    document.getElementById("toName").textContent = SETTINGS.toName;
+    document.getElementById("message").textContent = SETTINGS.message;
+
+    // ========= Typewriter =========
+    const typeEl = document.getElementById("typeText");
+    const text = SETTINGS.typeLine;
+    let i = 0;
+    function type(){
+      typeEl.textContent = text.slice(0, i++);
+      if(i <= text.length) requestAnimationFrame(type);
+    }
+    type();
+
+    // ========= أزرار =========
+    const modal = document.getElementById("modal");
+    document.getElementById("btnYes").addEventListener("click", () => {
+      modal.classList.add("show");
+      burst();
+    });
+
+    const noBtn = document.getElementById("btnNo");
+    let noCount = 0;
+    noBtn.addEventListener("click", () => {
+      noBtn.textContent = SETTINGS.noPhrases[Math.min(noCount, SETTINGS.noPhrases.length-1)];
+      noCount++;
+
+      // خليه يهرب شوية (لطيف ومش مزعج)
+      const dx = (Math.random()*240 - 120);
+      const dy = (Math.random()*160 - 80);
+      noBtn.style.transform = `translate(${dx}px, ${dy}px)`;
+      setTimeout(()=> noBtn.style.transform = "", 700);
+    });
+
+    document.getElementById("btnClose").addEventListener("click", () => {
+      modal.classList.remove("show");
+    });
+// ========= Canvas Hearts =========
+    const canvas = document.getElementById("hearts");
+    const ctx = canvas.getContext("2d");
+    let W, H, hearts = [];
+
+    function resize(){
+      W = canvas.width = window.innerWidth * devicePixelRatio;
+      H = canvas.height = window.innerHeight * devicePixelRatio;
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+    }
+    // safer resize (avoid repeated scaling)
+    function resizeSafe(){
+      canvas.width = window.innerWidth * devicePixelRatio;
+      canvas.height = window.innerHeight * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    }
+    window.addEventListener("resize", resizeSafe);
+    resizeSafe();
+
+    function heartPath(x,y,s,rot){
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(rot);
+      ctx.scale(s,s);
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.bezierCurveTo(12, -22, 34, -6, 0, 20);
+      ctx.bezierCurveTo(-34, -6, -12, -22, 0, -10);
+      ctx.closePath();
+      ctx.restore();
+    }
+
+    function spawn(n=1){
+      for(let k=0;k<n;k++){
+        hearts.push({
+          x: Math.random()*window.innerWidth,
+          y: window.innerHeight + Math.random()*200,
+          s: 0.3 + Math.random()*0.7,
+          vy: 0.6 + Math.random()*1.6,
+          vx: (Math.random()*0.8 - 0.4),
+          rot: Math.random()*Math.PI,
+          vr: (Math.random()*0.02 - 0.01),
+          a: 0.35 + Math.random()*0.5
+        });
+      }
+    }
+
+    function burst(){
+      spawn(26);
+    }
+
+    // initial hearts
+    spawn(24);
+
+    function tick(){
+      ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+      for(const h of hearts){
+        h.x += h.vx;
+        h.y -= h.vy;
+        h.rot += h.vr;
+
+        ctx.globalAlpha = h.a;
+        ctx.fillStyle = "rgba(255,255,255,.9)";
+        heartPath(h.x, h.y, h.s, h.rot);
+        ctx.fill();
+
+        // recycle
+        if(h.y < -60){
+          h.y = window.innerHeight + 60;
+          h.x = Math.random()*window.innerWidth;
+        }
+      }
+      ctx.globalAlpha = 1;
+      // keep a steady amount
+      if(hearts.length < 34) spawn(1);
+      requestAnimationFrame(tick);
+    }
+    tick();
+  </script>
+</body>
+</html>
